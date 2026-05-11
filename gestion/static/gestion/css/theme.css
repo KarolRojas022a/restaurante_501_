@@ -90,6 +90,18 @@ body.app-body {
   opacity: 0.85;
 }
 
+a.app-header__badge--link {
+  color: #fff !important;
+  text-decoration: none !important;
+  cursor: pointer;
+  transition: background 0.15s ease;
+}
+
+a.app-header__badge--link:hover {
+  background: #7a838f;
+  color: #fff !important;
+}
+
 .app-header__user {
   flex: 0 1 260px;
   display: flex;
@@ -180,6 +192,16 @@ body.app-body {
 .app-nav__link.is-active {
   background: var(--color-primary-active);
   box-shadow: inset 0 0 0 2px rgba(255, 255, 255, 0.35);
+}
+
+.app-nav-logout {
+  margin-top: 8px;
+}
+
+.app-nav__link--logout {
+  width: 100%;
+  cursor: pointer;
+  font: inherit;
 }
 
 .app-main {

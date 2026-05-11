@@ -1,8 +1,12 @@
+from django.contrib.auth.decorators import login_required
 from django.shortcuts import render, redirect, get_object_or_404
+
 from .models import Cliente, Empleado, Mesa, Plato, Orden, Factura
 from .forms import ClienteForm, EmpleadoForm, MesaForm, PlatoForm, OrdenForm, FacturaForm
 
+
 # 1. Dashboard Inicial
+@login_required
 def inicio(request):
     context = {
         'total_clientes': Cliente.objects.count(),
@@ -15,25 +19,32 @@ def inicio(request):
     return render(request, 'gestion/inicio.html', context)
 
 # 2. Listados (Read)
+@login_required
 def lista_clientes(request):
     return render(request, 'gestion/clientes.html', {'clientes': Cliente.objects.all()})
 
+@login_required
 def lista_empleados(request):
     return render(request, 'gestion/empleados.html', {'empleados': Empleado.objects.all()})
 
+@login_required
 def lista_mesas(request):
     return render(request, 'gestion/mesas.html', {'mesas': Mesa.objects.all()})
 
+@login_required
 def lista_platos(request):
     return render(request, 'gestion/platos.html', {'platos': Plato.objects.all()})
 
+@login_required
 def lista_ordenes(request):
     return render(request, 'gestion/ordenes.html', {'ordenes': Orden.objects.all()})
 
+@login_required
 def lista_facturas(request):
     return render(request, 'gestion/facturas.html', {'facturas': Factura.objects.all()})
 
 # 3. El Motor del CRUD (Create & Update)
+@login_required
 def gestionar_registro(request, modelo, pk=None):
     config = {
         'cliente': (Cliente, ClienteForm, 'lista_clientes'),
@@ -64,7 +75,8 @@ def gestionar_registro(request, modelo, pk=None):
     })
     
     
-  # Función para Eliminar
+# Función para Eliminar
+@login_required
 def eliminar_registro(request, modelo, pk):
     config = {
         'cliente': (Cliente, 'lista_clientes'),

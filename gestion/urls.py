@@ -1,7 +1,13 @@
 from django.urls import path
 from . import views
+from . import views_auth
 
 urlpatterns = [
+    path('acceso/', views_auth.proteccion_sesion, name='requiere_acceso'),
+    path('ingresar/', views_auth.vista_ingresar, name='ingresar'),
+    path('registrar/', views_auth.vista_registrar, name='registrar'),
+    path('salir/', views_auth.vista_salir, name='salir'),
+
     path('', views.inicio, name='inicio'),
     
     # Rutas para ver Listas

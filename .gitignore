@@ -1,4 +1,5 @@
 venv/
+Documentacion/
 env/
 _pycache_/
 *.pyc

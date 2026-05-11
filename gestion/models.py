@@ -1,5 +1,9 @@
 from decimal import Decimal
+
+from django.contrib.auth.models import User
 from django.db import models
+from django.db.models.signals import post_save
+from django.dispatch import receiver
 
 
 class Cliente(models.Model):
@@ -134,3 +138,36 @@ class Factura(models.Model):
 
     def __str__(self):
         return f"Factura {self.id} - Orden {self.orden.id}"
+
+
+class Perfil(models.Model):
+    """Perfil de aplicación ligado al usuario de Django (rol y permiso de admin del sitio)."""
+
+    ROLES = [
+        ('camarero', 'Camarero'),
+        ('gestor', 'Gestor'),
+        ('desarrollador', 'Desarrollador'),
+        ('staff', 'Staff'),
+    ]
+
+    user = models.OneToOneField(User, on_delete=models.CASCADE, related_name='perfil')
+    rol = models.CharField(max_length=32, choices=ROLES, default='staff')
+    es_admin = models.BooleanField(default=False)
+
+    class Meta:
+        db_table = 'PerfilUsuario'
+
+    def __str__(self):
+        return f'{self.user.get_username()} — {self.get_rol_display()}'
+
+
+@receiver(post_save, sender=User)
+def crear_o_asegurar_perfil(sender, instance, **kwargs):
+    """Garantiza un perfil por usuario (p. ej. superusuarios creados por consola)."""
+    Perfil.objects.get_or_create(
+        user=instance,
+        defaults={
+            'rol': 'staff',
+            'es_admin': bool(instance.is_superuser),
+        },
+    )

@@ -1,5 +1,51 @@
 from django import forms
-from .models import Plato, Cliente, Empleado, Mesa, Orden, Factura
+from django.contrib.auth.forms import AuthenticationForm, UserCreationForm
+from django.contrib.auth.models import User
+
+from .models import Plato, Cliente, Empleado, Mesa, Orden, Factura, Perfil
+
+
+class IngresoUsuarioForm(AuthenticationForm):
+    username = forms.CharField(
+        label='Nombre usuario',
+        widget=forms.TextInput(attrs={'class': 'auth-field-thick', 'autocomplete': 'username'}),
+    )
+    password = forms.CharField(
+        label='Clave usuario',
+        widget=forms.PasswordInput(attrs={'class': 'auth-field-thick', 'autocomplete': 'current-password'}),
+    )
+
+
+class RegistroUsuarioForm(UserCreationForm):
+    username = forms.CharField(
+        label='Nombre usuario',
+        widget=forms.TextInput(attrs={'class': 'auth-field-thick', 'autocomplete': 'username'}),
+    )
+    password1 = forms.CharField(
+        label='Clave usuario',
+        widget=forms.PasswordInput(attrs={'class': 'auth-field-thick', 'autocomplete': 'new-password'}),
+    )
+    password2 = forms.CharField(
+        label='Confirmar clave',
+        widget=forms.PasswordInput(attrs={'class': 'auth-field-thick', 'autocomplete': 'new-password'}),
+    )
+    rol = forms.ChoiceField(
+        label='Rol usuario',
+        choices=Perfil.ROLES,
+        widget=forms.Select(attrs={'class': 'auth-field-thick'}),
+    )
+
+    class Meta(UserCreationForm.Meta):
+        model = User
+        fields = ('username',)
+
+    def save(self, commit=True):
+        user = super().save(commit=commit)
+        if hasattr(user, 'perfil'):
+            user.perfil.rol = self.cleaned_data['rol']
+            user.perfil.es_admin = False
+            user.perfil.save(update_fields=['rol', 'es_admin'])
+        return user
 
 class ClienteForm(forms.ModelForm):
     class Meta:

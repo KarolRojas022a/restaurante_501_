@@ -1,0 +1,22 @@
+{% extends 'gestion/auth/base_auth.html' %}
+
+{% block auth_title %}Acceso requerido{% endblock %}
+
+{% block auth_body %}
+<header class="auth-header">
+    <div class="auth-brand-blob">
+        Sistema de Gestión de Pedidos Pasta la Vista
+    </div>
+    <nav class="auth-header-actions" aria-label="Acceso al sistema">
+        <a href="{% url 'ingresar' %}" class="auth-pill-btn">Ingresar</a>
+        <a href="{% url 'registrar' %}" class="auth-pill-btn">Registrar</a>
+    </nav>
+</header>
+
+<main class="auth-main">
+    <div class="auth-message-panel">
+        <p>El sistema de gestión de pedidos — Pasta la Vista requiere de un usuario para ver información.</p>
+        <p>Por favor registrar usuario o ingresar usando los botones en la parte superior.</p>
+    </div>
+</main>
+{% endblock %}

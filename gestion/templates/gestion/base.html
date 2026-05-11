@@ -14,10 +14,17 @@
             <div class="app-header__brand">
                 Sistema de Gestión de Pedidos Pasta la Vista
             </div>
+            {% if user.is_authenticated and perfil_cuenta and perfil_cuenta.es_admin %}
+            <a href="{% url 'admin:index' %}" class="app-header__badge app-header__badge--link" title="Panel de administración Django">
+                <span>Admin</span>
+                <span>Django</span>
+            </a>
+            {% else %}
             <div class="app-header__badge">
                 <span>Admin</span>
                 <span>Django</span>
             </div>
+            {% endif %}
             <div class="app-header__user">
                 <div class="app-header__user-icon" aria-hidden="true">
                     <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" width="24" height="24">
@@ -33,8 +40,10 @@
                         {% endif %}
                     </div>
                     <div class="app-header__user-role">
-                        {% if user.is_authenticated %}
-                            Administrador del restaurante
+                        {% if user.is_authenticated and perfil_cuenta %}
+                            {{ perfil_cuenta.get_rol_display }}
+                        {% elif user.is_authenticated %}
+                            Sin perfil asignado
                         {% else %}
                             Sin sesión iniciada
                         {% endif %}
@@ -54,6 +63,10 @@
                 <a href="{% url 'lista_platos' %}" class="app-nav__link{% if request.path|slice:':8' == '/platos/' %} is-active{% endif %}">Platos</a>
                 <a href="{% url 'lista_ordenes' %}" class="app-nav__link{% if request.path|slice:':9' == '/ordenes/' %} is-active{% endif %}">Órdenes</a>
                 <a href="{% url 'lista_facturas' %}" class="app-nav__link{% if request.path|slice:':10' == '/facturas/' %} is-active{% endif %}">Facturas</a>
+                <form class="app-nav-logout" method="post" action="{% url 'salir' %}">
+                    {% csrf_token %}
+                    <button type="submit" class="app-nav__link app-nav__link--logout">Salir</button>
+                </form>
             </nav>
         </aside>
 
