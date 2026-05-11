@@ -1,26 +1,25 @@
 {% extends 'gestion/base.html' %}
-
 {% block content %}
+<a href="{% url 'crear_factura' %}" class="btn">Registrar Nueva Factura</a>
 <h2>Facturas</h2>
 <table>
     <tr>
         <th>ID</th>
         <th>Orden</th>
-        <th>Fecha</th>
-        <th>Subtotal</th>
-        <th>Impuesto</th>
         <th>Total</th>
-        <th>Método de pago</th>
+        <th>Método Pago</th>
+        <th>Acciones</th>
     </tr>
     {% for factura in facturas %}
     <tr>
         <td>{{ factura.id }}</td>
-        <td>{{ factura.orden.id }}</td>
-        <td>{{ factura.fecha_factura }}</td>
-        <td>{{ factura.subtotal }}</td>
-        <td>{{ factura.impuesto }}</td>
+        <td>{{ factura.orden }}</td>
         <td>{{ factura.total_factura }}</td>
         <td>{{ factura.metodo_pago }}</td>
+        <td>
+            <a href="{% url 'editar_factura' factura.id %}" class="btn-editar">Editar</a>
+            <a href="{% url 'eliminar_factura' factura.id %}" class="btn-eliminar">Eliminar</a>
+        </td>
     </tr>
     {% endfor %}
 </table>
