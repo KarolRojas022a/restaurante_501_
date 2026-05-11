@@ -6,38 +6,67 @@ from .models import Plato, Cliente, Empleado, Mesa, Orden, Factura, Perfil
 
 
 class IngresoUsuarioForm(AuthenticationForm):
+    error_messages = {
+        **AuthenticationForm.error_messages,
+        'invalid_login': 'Usuario o clave incorrectos. Comprueba los datos e inténtalo de nuevo.',
+        'inactive': 'Esta cuenta está desactivada. Contacta al administrador.',
+    }
+
     username = forms.CharField(
         label='Nombre usuario',
+        error_messages={'required': 'Indica el nombre de usuario.'},
         widget=forms.TextInput(attrs={'class': 'auth-field-thick', 'autocomplete': 'username'}),
     )
     password = forms.CharField(
         label='Clave usuario',
+        error_messages={'required': 'Indica la clave.'},
         widget=forms.PasswordInput(attrs={'class': 'auth-field-thick', 'autocomplete': 'current-password'}),
     )
 
 
 class RegistroUsuarioForm(UserCreationForm):
+    error_messages = {
+        **UserCreationForm.error_messages,
+        'password_mismatch': 'Las dos claves no coinciden.',
+    }
+
     username = forms.CharField(
         label='Nombre usuario',
+        error_messages={
+            'required': 'Indica el nombre de usuario.',
+        },
         widget=forms.TextInput(attrs={'class': 'auth-field-thick', 'autocomplete': 'username'}),
     )
     password1 = forms.CharField(
         label='Clave usuario',
+        error_messages={'required': 'Indica la clave.'},
         widget=forms.PasswordInput(attrs={'class': 'auth-field-thick', 'autocomplete': 'new-password'}),
     )
     password2 = forms.CharField(
         label='Confirmar clave',
+        error_messages={'required': 'Confirma la clave.'},
         widget=forms.PasswordInput(attrs={'class': 'auth-field-thick', 'autocomplete': 'new-password'}),
     )
     rol = forms.ChoiceField(
         label='Rol usuario',
-        choices=Perfil.ROLES,
+        choices=[],
+        error_messages={
+            'required': 'Selecciona un rol de usuario.',
+            'invalid_choice': 'Selecciona un rol válido.',
+        },
         widget=forms.Select(attrs={'class': 'auth-field-thick'}),
     )
 
     class Meta(UserCreationForm.Meta):
         model = User
         fields = ('username',)
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.fields['rol'].choices = [('', '— Elige un rol —')] + list(Perfil.ROLES)
+        for name in ('username', 'password1', 'password2'):
+            if name in self.fields:
+                self.fields[name].help_text = None
 
     def save(self, commit=True):
         user = super().save(commit=commit)
