@@ -39,7 +39,7 @@
                             Invitado
                         {% endif %}
                     </div>
-                    <div class="app-header__user-role">
+                    <div class="app-header__user-role"{% if perfil_cuenta %} data-rol="{{ perfil_cuenta.rol }}"{% endif %}>
                         {% if user.is_authenticated and perfil_cuenta %}
                             {{ perfil_cuenta.get_rol_display }}
                         {% elif user.is_authenticated %}
@@ -57,12 +57,32 @@
         <aside class="app-sidebar">
             <nav class="app-nav" aria-label="Secciones principales">
                 <a href="{% url 'inicio' %}" class="app-nav__link{% if request.path == '/' %} is-active{% endif %}">Inicio</a>
-                <a href="{% url 'lista_clientes' %}" class="app-nav__link{% if request.path|slice:':10' == '/clientes/' %} is-active{% endif %}">Clientes</a>
-                <a href="{% url 'lista_empleados' %}" class="app-nav__link{% if request.path|slice:':11' == '/empleados/' %} is-active{% endif %}">Empleados</a>
-                <a href="{% url 'lista_mesas' %}" class="app-nav__link{% if request.path|slice:':7' == '/mesas/' %} is-active{% endif %}">Mesas</a>
-                <a href="{% url 'lista_platos' %}" class="app-nav__link{% if request.path|slice:':8' == '/platos/' %} is-active{% endif %}">Platos</a>
-                <a href="{% url 'lista_ordenes' %}" class="app-nav__link{% if request.path|slice:':9' == '/ordenes/' %} is-active{% endif %}">Órdenes</a>
-                <a href="{% url 'lista_facturas' %}" class="app-nav__link{% if request.path|slice:':10' == '/facturas/' %} is-active{% endif %}">Facturas</a>
+
+                {% if perfil_cuenta %}
+                    {% with rol=perfil_cuenta.rol %}
+
+                    {% if rol == 'gerente' or rol == 'staff' or rol == 'mesero' %}
+                    <a href="{% url 'lista_clientes' %}" class="app-nav__link{% if request.path|slice:':10' == '/clientes/' %} is-active{% endif %}">Clientes</a>
+                    {% endif %}
+
+                    {% if rol == 'gerente' or rol == 'staff' %}
+                    <a href="{% url 'lista_empleados' %}" class="app-nav__link{% if request.path|slice:':11' == '/empleados/' %} is-active{% endif %}">Empleados</a>
+                    {% endif %}
+
+                    {% if rol == 'gerente' or rol == 'staff' or rol == 'mesero' %}
+                    <a href="{% url 'lista_mesas' %}" class="app-nav__link{% if request.path|slice:':7' == '/mesas/' %} is-active{% endif %}">Mesas</a>
+                    {% endif %}
+
+                    <a href="{% url 'lista_platos' %}" class="app-nav__link{% if request.path|slice:':8' == '/platos/' %} is-active{% endif %}">Platos</a>
+
+                    <a href="{% url 'lista_ordenes' %}" class="app-nav__link{% if request.path|slice:':9' == '/ordenes/' %} is-active{% endif %}">Órdenes</a>
+
+                    {% if rol == 'gerente' or rol == 'staff' or rol == 'contador' %}
+                    <a href="{% url 'lista_facturas' %}" class="app-nav__link{% if request.path|slice:':10' == '/facturas/' %} is-active{% endif %}">Facturas</a>
+                    {% endif %}
+
+                    {% endwith %}
+                {% endif %}
                 <form class="app-nav-logout" method="post" action="{% url 'salir' %}">
                     {% csrf_token %}
                     <button type="submit" class="app-nav__link app-nav__link--logout">Salir</button>

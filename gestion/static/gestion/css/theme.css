@@ -239,3 +239,20 @@ a.app-header__badge--link:hover {
     min-width: 120px;
   }
 }
+
+/* Badges de rol por usuario */
+.app-header__user-role[data-rol="gerente"],
+.app-header__user-role[data-rol="staff"] {
+  color: var(--color-primary);
+  font-weight: 700;
+}
+
+.app-header__user-role[data-rol="mesero"] {
+  color: #218838;
+  font-weight: 600;
+}
+
+.app-header__user-role[data-rol="contador"] {
+  color: #9a6700;
+  font-weight: 600;
+}
