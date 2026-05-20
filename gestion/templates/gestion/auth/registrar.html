@@ -1,0 +1,63 @@
+{% extends 'gestion/auth/base_auth.html' %}
+
+{% block auth_title %}Registrar usuario{% endblock %}
+
+{% block auth_body %}
+<header class="auth-header">
+    <div class="auth-brand-blob auth-brand-blob--small">
+        Sistema de Gestión de Pedidos Pasta la Vista
+    </div>
+    <div class="auth-header-title-area">
+        <h1 class="auth-page-heading">Registrar usuario</h1>
+    </div>
+</header>
+
+<div class="auth-form-shell">
+    <form method="post" action="{% url 'registrar' %}" class="auth-form-page" novalidate>
+        {% csrf_token %}
+        <div class="auth-form-layout">
+            <div class="auth-form-fields">
+                <label class="auth-label-blob" for="{{ form.username.id_for_label }}">{{ form.username.label }}</label>
+                {{ form.username }}
+
+                <label class="auth-label-blob" for="{{ form.rol.id_for_label }}">{{ form.rol.label }}</label>
+                {{ form.rol }}
+
+                <label class="auth-label-blob" for="{{ form.password1.id_for_label }}">{{ form.password1.label }}</label>
+                {{ form.password1 }}
+
+                <label class="auth-label-blob" for="{{ form.password2.id_for_label }}">{{ form.password2.label }}</label>
+                {{ form.password2 }}
+            </div>
+            <aside class="auth-form-aside">
+                <div class="auth-notice-panel{% if form.errors %} auth-notice-panel--errors{% endif %}">
+                    {% if form.non_field_errors %}
+                        {% for err in form.non_field_errors %}<p>{{ err }}</p>{% endfor %}
+                    {% endif %}
+                    {% if form.username.errors %}
+                        {% for err in form.username.errors %}<p>{{ err }}</p>{% endfor %}
+                    {% endif %}
+                    {% if form.rol.errors %}
+                        {% for err in form.rol.errors %}<p>{{ err }}</p>{% endfor %}
+                    {% endif %}
+                    {% if form.password1.errors %}
+                        {% for err in form.password1.errors %}<p>{{ err }}</p>{% endfor %}
+                    {% endif %}
+                    {% if form.password2.errors %}
+                        {% for err in form.password2.errors %}<p>{{ err }}</p>{% endfor %}
+                    {% endif %}
+                    {% if not form.errors %}
+                        <p class="auth-notice-panel--placeholder">Campo para mostrar advertencias, ejemplo: no hay nombre, no hay clave</p>
+                    {% endif %}
+                </div>
+                <div class="auth-submit-wrap">
+                    <button type="submit" class="auth-submit-blob">Registrar usuario</button>
+                </div>
+            </aside>
+        </div>
+    </form>
+    <div class="auth-back-wrap">
+        <a href="{% url 'requiere_acceso' %}" class="auth-back-btn">← Volver al menú de acceso</a>
+    </div>
+</div>
+{% endblock %}

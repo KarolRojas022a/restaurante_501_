@@ -1,0 +1,27 @@
+{% extends 'gestion/base.html' %}
+
+{% block content %}
+<a href="{% url 'crear_plato' %}" class="btn">Registrar Nuevo Plato</a>
+<h2>Platos</h2>
+<table>
+    <tr>
+        <th>ID</th>
+        <th>Nombre</th>
+        <th>Precio</th>
+        <th>Categoría</th>
+        <th>Acciones</th>
+    </tr>
+    {% for plato in platos %}
+    <tr>
+        <td>{{ plato.id }}</td>
+        <td>{{ plato.nombre_plato }}</td>
+        <td>{{ plato.precio }}</td>
+        <td>{{ plato.categoria }}</td>
+        <td>
+            <a href="{% url 'editar_plato' plato.id %}" class="btn-editar">Editar</a>
+            <a href="{% url 'eliminar_plato' plato.id %}" class="btn-eliminar">Eliminar</a>
+        </td>
+    </tr>
+    {% endfor %}
+</table>
+{% endblock %}

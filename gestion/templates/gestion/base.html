@@ -1,0 +1,81 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>{% block title %}Restaurante Pasta La Vista{% endblock %}</title>
+    <link rel="stylesheet" href="{% static 'gestion/css/theme.css' %}">
+    <link rel="stylesheet" href="{% static 'gestion/css/components.css' %}">
+</head>
+<body class="app-body">
+    <header class="app-header">
+        <div class="app-header__inner">
+            <div class="app-header__brand">
+                Sistema de Gestión de Pedidos Pasta la Vista
+            </div>
+            {% if user.is_authenticated and perfil_cuenta and perfil_cuenta.es_admin %}
+            <a href="{% url 'admin:index' %}" class="app-header__badge app-header__badge--link" title="Panel de administración Django">
+                <span>Admin</span>
+                <span>Django</span>
+            </a>
+            {% else %}
+            <div class="app-header__badge">
+                <span>Admin</span>
+                <span>Django</span>
+            </div>
+            {% endif %}
+            <div class="app-header__user">
+                <div class="app-header__user-icon" aria-hidden="true">
+                    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" width="24" height="24">
+                        <path d="M12 12c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm0 2c-2.67 0-8 1.34-8 4v2h16v-2c0-2.66-5.33-4-8-4z"/>
+                    </svg>
+                </div>
+                <div class="app-header__user-text">
+                    <div class="app-header__user-name">
+                        {% if user.is_authenticated %}
+                            {{ user.get_username }}
+                        {% else %}
+                            Invitado
+                        {% endif %}
+                    </div>
+                    <div class="app-header__user-role">
+                        {% if user.is_authenticated and perfil_cuenta %}
+                            {{ perfil_cuenta.get_rol_display }}
+                        {% elif user.is_authenticated %}
+                            Sin perfil asignado
+                        {% else %}
+                            Sin sesión iniciada
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+        </div>
+    </header>
+
+    <div class="app-shell">
+        <aside class="app-sidebar">
+            <nav class="app-nav" aria-label="Secciones principales">
+                <a href="{% url 'inicio' %}" class="app-nav__link{% if request.path == '/' %} is-active{% endif %}">Inicio</a>
+                <a href="{% url 'lista_clientes' %}" class="app-nav__link{% if request.path|slice:':10' == '/clientes/' %} is-active{% endif %}">Clientes</a>
+                <a href="{% url 'lista_empleados' %}" class="app-nav__link{% if request.path|slice:':11' == '/empleados/' %} is-active{% endif %}">Empleados</a>
+                <a href="{% url 'lista_mesas' %}" class="app-nav__link{% if request.path|slice:':7' == '/mesas/' %} is-active{% endif %}">Mesas</a>
+                <a href="{% url 'lista_platos' %}" class="app-nav__link{% if request.path|slice:':8' == '/platos/' %} is-active{% endif %}">Platos</a>
+                <a href="{% url 'lista_ordenes' %}" class="app-nav__link{% if request.path|slice:':9' == '/ordenes/' %} is-active{% endif %}">Órdenes</a>
+                <a href="{% url 'lista_facturas' %}" class="app-nav__link{% if request.path|slice:':10' == '/facturas/' %} is-active{% endif %}">Facturas</a>
+                <form class="app-nav-logout" method="post" action="{% url 'salir' %}">
+                    {% csrf_token %}
+                    <button type="submit" class="app-nav__link app-nav__link--logout">Salir</button>
+                </form>
+            </nav>
+        </aside>
+
+        <main class="app-main">
+            <div class="app-panel">
+                {% block content %}
+                {% endblock %}
+            </div>
+        </main>
+    </div>
+</body>
+</html>
