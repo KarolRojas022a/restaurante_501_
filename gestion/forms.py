@@ -90,15 +90,89 @@ class RegistroUsuarioForm(UserCreationForm):
         return user
 
 class ClienteForm(forms.ModelForm):
+    codigo_pais = forms.ChoiceField(
+        choices=CODIGOS_PAIS,
+        required=False,
+        label='',
+        widget=forms.Select(attrs={'class': 'select-codigo-pais'}),
+    )
+
     class Meta:
         model = Cliente
         fields = ['nombre', 'telefono', 'correo']
+        widgets = {
+            'telefono': forms.TextInput(attrs={
+                'inputmode': 'numeric',
+                'pattern': '[0-9]*',
+                'class': 'input-telefono',
+                'placeholder': 'Número local',
+            }),
+            'correo': forms.EmailInput(attrs={'placeholder': 'usuario@dominio.com'}),
+        }
 
+    def clean_correo(self):
+        correo = self.cleaned_data.get('correo')
+        if correo:
+            if '@' not in correo:
+                raise forms.ValidationError('El correo debe contener @.')
+            _, dominio = correo.rsplit('@', 1)
+            from .models import DOMINIOS_ACEPTADOS
+            if dominio.lower() not in DOMINIOS_ACEPTADOS:
+                raise forms.ValidationError(
+                    f'Dominio "{dominio}" no permitido. '
+                    f'Dominios aceptados: {", ".join(sorted(DOMINIOS_ACEPTADOS))}.'
+                )
+        return correo
+
+    def clean_telefono(self):
+        tel = self.cleaned_data.get('telefono') or ''
+        if tel and not tel.replace(' ', '').isdigit():
+            raise forms.ValidationError('El teléfono solo puede contener números.')
+        return tel
+    
+
+    
 class EmpleadoForm(forms.ModelForm):
-    class Meta:
+     codigo_pais = forms.ChoiceField(
+        choices=CODIGOS_PAIS,
+        required=False,
+        label='',
+        widget=forms.Select(attrs={'class': 'select-codigo-pais'}),
+    )
+     
+     class Meta:
         model = Empleado
         fields = ['nombre', 'cargo', 'telefono', 'correo']
+        widgets = {
+            'telefono': forms.TextInput(attrs={
+                'inputmode': 'numeric',
+                'pattern': '[0-9]*',
+                'class': 'input-telefono',
+                'placeholder': 'Número local',
+            }),
+            'correo': forms.EmailInput(attrs={'placeholder': 'usuario@dominio.com'}),
+        }
+     def clean_correo(self):
+        correo = self.cleaned_data.get('correo')
+        if correo:
+            if '@' not in correo:
+                raise forms.ValidationError('El correo debe contener @.')
+            _, dominio = correo.rsplit('@', 1)
+            from .models import DOMINIOS_ACEPTADOS
+            if dominio.lower() not in DOMINIOS_ACEPTADOS:
+                raise forms.ValidationError(
+                    f'Dominio "{dominio}" no permitido. '
+                    f'Dominios aceptados: {", ".join(sorted(DOMINIOS_ACEPTADOS))}.'
+                )
+        return correo
 
+     def clean_telefono(self):
+        tel = self.cleaned_data.get('telefono') or ''
+        if tel and not tel.replace(' ', '').isdigit():
+            raise forms.ValidationError('El teléfono solo puede contener números.')
+        return tel
+        
+    
 class MesaForm(forms.ModelForm):
     class Meta:
         model = Mesa
