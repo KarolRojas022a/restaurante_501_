@@ -235,3 +235,26 @@
   border: none;
   cursor: pointer;
 }
+
+/* Acceso denegado */
+.acceso-denegado-box {
+  max-width: 480px;
+  margin: 40px auto;
+  text-align: center;
+  padding: 32px;
+  border: 2px solid #f5c2c7;
+  border-radius: var(--radius-md);
+  background: #fff8f8;
+}
+
+.acceso-denegado-box h2 {
+  color: #b02a37;
+  margin-bottom: 12px;
+}
+
+.acceso-denegado-box p {
+  color: var(--color-text-muted);
+  margin-bottom: 24px;
+  font-size: 0.95rem;
+  line-height: 1.6;
+}

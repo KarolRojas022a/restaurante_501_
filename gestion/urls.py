@@ -9,6 +9,7 @@ urlpatterns = [
     path('salir/', views_auth.vista_salir, name='salir'),
 
     path('', views.inicio, name='inicio'),
+    path('acceso-denegado/', views.acceso_denegado, name='acceso_denegado'),
     
     # Rutas para ver Listas
     path('clientes/', views.lista_clientes, name='lista_clientes'),

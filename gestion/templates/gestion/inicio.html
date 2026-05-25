@@ -4,34 +4,46 @@
 <h2>Panel principal</h2>
 
 <div class="dashboard-cards">
+{% if total_clientes is not None %}
 <div class="card">
     <h3>Clientes</h3>
     <p>{{ total_clientes }}</p>
 </div>
+{% endif %}
 
+{% if total_empleados is not None %}
 <div class="card">
     <h3>Empleados</h3>
     <p>{{ total_empleados }}</p>
 </div>
+{% endif %}
 
+{% if total_mesas is not None %}
 <div class="card">
     <h3>Mesas</h3>
     <p>{{ total_mesas }}</p>
 </div>
+{% endif %}
 
+{% if total_platos is not None %}
 <div class="card">
     <h3>Platos</h3>
     <p>{{ total_platos }}</p>
 </div>
+{% endif %}
 
+{% if total_ordenes is not None %}
 <div class="card">
     <h3>Órdenes</h3>
     <p>{{ total_ordenes }}</p>
 </div>
+{% endif %}
 
+{% if total_facturas is not None %}
 <div class="card">
     <h3>Facturas</h3>
     <p>{{ total_facturas }}</p>
 </div>
+{% endif %}
 </div>
 {% endblock %}

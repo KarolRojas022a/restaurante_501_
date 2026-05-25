@@ -144,9 +144,9 @@ class Perfil(models.Model):
     """Perfil de aplicación ligado al usuario de Django (rol y permiso de admin del sitio)."""
 
     ROLES = [
-        ('camarero', 'Camarero'),
-        ('gestor', 'Gestor'),
-        ('desarrollador', 'Desarrollador'),
+        ('mesero', 'Mesero'),
+        ('gerente', 'Gerente'),
+        ('contador', 'Contador'),
         ('staff', 'Staff'),
     ]
 
