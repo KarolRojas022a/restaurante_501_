@@ -4,12 +4,26 @@ from django.contrib.auth.models import User
 from django.db import models
 from django.db.models.signals import post_save
 from django.dispatch import receiver
+from django.core.exceptions import ValidationError
 
+DOMINIOS_ACEPTADOS = {'gmail.com', 'hotmail.com', 'outlook.com', 'yahoo.com', 'unal.edu.co', 'edu.co'}
+
+def validar_dominio_correo(value):
+    if not value:
+        return
+    if '@' not in value:
+        raise ValidationError('El correo debe contener @.')
+    _, dominio = value.rsplit('@', 1)
+    if dominio.lower() not in DOMINIOS_ACEPTADOS:
+        raise ValidationError(
+            f'Dominio "{dominio}" no permitido. '
+            f'Dominios aceptados: {", ".join(sorted(DOMINIOS_ACEPTADOS))}.'
+        )
 
 class Cliente(models.Model):
     nombre = models.CharField(max_length=100)
     telefono = models.CharField(max_length=20, blank=True, null=True)
-    correo = models.EmailField(unique=True, blank=True, null=True)
+    correo = models.EmailField(unique=True, blank=True, null=True, validators=[validar_dominio_correo])
 
     class Meta:
         db_table = 'Cliente'

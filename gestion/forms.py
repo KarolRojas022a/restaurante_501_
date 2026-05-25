@@ -1,9 +1,22 @@
 from django import forms
 from django.contrib.auth.forms import AuthenticationForm, UserCreationForm
 from django.contrib.auth.models import User
-
+from decimal import Decimal
 from .models import Plato, Cliente, Empleado, Mesa, Orden, Factura, Perfil
 
+CODIGOS_PAIS = [
+    ('', '— País —'),
+    ('+57', '🇨🇴 +57 Colombia'),
+    ('+1',  '🇺🇸 +1 EE.UU / Canadá'),
+    ('+34', '🇪🇸 +34 España'),
+    ('+52', '🇲🇽 +52 México'),
+    ('+54', '🇦🇷 +54 Argentina'),
+    ('+55', '🇧🇷 +55 Brasil'),
+    ('+56', '🇨🇱 +56 Chile'),
+    ('+58', '🇻🇪 +58 Venezuela'),
+    ('+593','🇪🇨 +593 Ecuador'),
+    ('+51', '🇵🇪 +51 Perú'),
+]
 
 class IngresoUsuarioForm(AuthenticationForm):
     error_messages = {
@@ -77,15 +90,89 @@ class RegistroUsuarioForm(UserCreationForm):
         return user
 
 class ClienteForm(forms.ModelForm):
+    codigo_pais = forms.ChoiceField(
+        choices=CODIGOS_PAIS,
+        required=False,
+        label='',
+        widget=forms.Select(attrs={'class': 'select-codigo-pais'}),
+    )
+
     class Meta:
         model = Cliente
         fields = ['nombre', 'telefono', 'correo']
+        widgets = {
+            'telefono': forms.TextInput(attrs={
+                'inputmode': 'numeric',
+                'pattern': '[0-9]*',
+                'class': 'input-telefono',
+                'placeholder': 'Número local',
+            }),
+            'correo': forms.EmailInput(attrs={'placeholder': 'usuario@dominio.com'}),
+        }
 
+    def clean_correo(self):
+        correo = self.cleaned_data.get('correo')
+        if correo:
+            if '@' not in correo:
+                raise forms.ValidationError('El correo debe contener @.')
+            _, dominio = correo.rsplit('@', 1)
+            from .models import DOMINIOS_ACEPTADOS
+            if dominio.lower() not in DOMINIOS_ACEPTADOS:
+                raise forms.ValidationError(
+                    f'Dominio "{dominio}" no permitido. '
+                    f'Dominios aceptados: {", ".join(sorted(DOMINIOS_ACEPTADOS))}.'
+                )
+        return correo
+
+    def clean_telefono(self):
+        tel = self.cleaned_data.get('telefono') or ''
+        if tel and not tel.replace(' ', '').isdigit():
+            raise forms.ValidationError('El teléfono solo puede contener números.')
+        return tel
+    
+
+    
 class EmpleadoForm(forms.ModelForm):
-    class Meta:
+     codigo_pais = forms.ChoiceField(
+        choices=CODIGOS_PAIS,
+        required=False,
+        label='',
+        widget=forms.Select(attrs={'class': 'select-codigo-pais'}),
+    )
+     
+     class Meta:
         model = Empleado
         fields = ['nombre', 'cargo', 'telefono', 'correo']
+        widgets = {
+            'telefono': forms.TextInput(attrs={
+                'inputmode': 'numeric',
+                'pattern': '[0-9]*',
+                'class': 'input-telefono',
+                'placeholder': 'Número local',
+            }),
+            'correo': forms.EmailInput(attrs={'placeholder': 'usuario@dominio.com'}),
+        }
+     def clean_correo(self):
+        correo = self.cleaned_data.get('correo')
+        if correo:
+            if '@' not in correo:
+                raise forms.ValidationError('El correo debe contener @.')
+            _, dominio = correo.rsplit('@', 1)
+            from .models import DOMINIOS_ACEPTADOS
+            if dominio.lower() not in DOMINIOS_ACEPTADOS:
+                raise forms.ValidationError(
+                    f'Dominio "{dominio}" no permitido. '
+                    f'Dominios aceptados: {", ".join(sorted(DOMINIOS_ACEPTADOS))}.'
+                )
+        return correo
 
+     def clean_telefono(self):
+        tel = self.cleaned_data.get('telefono') or ''
+        if tel and not tel.replace(' ', '').isdigit():
+            raise forms.ValidationError('El teléfono solo puede contener números.')
+        return tel
+        
+    
 class MesaForm(forms.ModelForm):
     class Meta:
         model = Mesa
@@ -101,7 +188,31 @@ class OrdenForm(forms.ModelForm):
         model = Orden
         fields = ['cliente', 'empleado', 'mesa', 'estado_orden']
 
+IVA = 0.19  # 19 % — ajusta según tu negocio
 class FacturaForm(forms.ModelForm):
     class Meta:
         model = Factura
-        fields = ['orden', 'metodo_pago', 'subtotal', 'impuesto', 'total_factura']
+        fields = ['orden', 'metodo_pago']
+def clean(self):
+        cleaned = super().clean()
+        orden = cleaned.get('orden')
+        if orden:
+            subtotal = orden.total                          # ya calculado en DetalleOrden.save()
+            impuesto = (subtotal * Decimal(str(IVA))).quantize(Decimal('0.01'))
+            total    = subtotal + impuesto
+            cleaned['subtotal']      = subtotal
+            cleaned['impuesto']      = impuesto
+            cleaned['total_factura'] = total
+        return cleaned
+def save(self, commit=True):
+        instance = super().save(commit=False)
+        instance.subtotal      = self.cleaned_data['subtotal']
+        instance.impuesto      = self.cleaned_data['impuesto']
+        instance.total_factura = self.cleaned_data['total_factura']
+        if commit:
+            instance.save()
+            # Marcar la orden como Facturada
+            orden = instance.orden
+            orden.estado_orden = 'Facturada'
+            orden.save(update_fields=['estado_orden'])
+        return instance

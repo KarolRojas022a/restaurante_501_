@@ -7,7 +7,7 @@ urlpatterns = [
     path('ingresar/', views_auth.vista_ingresar, name='ingresar'),
     path('registrar/', views_auth.vista_registrar, name='registrar'),
     path('salir/', views_auth.vista_salir, name='salir'),
-
+    path('api/orden/<int:pk>/totales/', views.api_totales_orden, name='api_totales_orden'),
     path('', views.inicio, name='inicio'),
     path('acceso-denegado/', views.acceso_denegado, name='acceso_denegado'),
     

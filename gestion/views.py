@@ -90,16 +90,27 @@ def gestionar_registro(request, modelo, pk=None):
 
     if request.method == 'POST':
         form = form_class(request.POST, instance=instance)
+        if modelo == 'factura' and pk:
+            return redirect('acceso_denegado')
         if form.is_valid():
             form.save()
             return redirect(redirect_url)
     else:
         form = form_class(instance=instance)
 
+    # Justo después del bloque anterior
+    if modelo == 'orden' and pk:
+        from .models import Factura as FacturaModel
+    if Factura.objects.filter(orden_id=pk).exists():
+         return redirect('acceso_denegado')
+    # También verificar por estado_orden
+    if instance and instance.estado_orden == 'Facturada':
+          return redirect('acceso_denegado')
     return render(request, 'gestion/form_generico.html', {
         'form': form,
         'titulo': f'{"Editar" if pk else "Nuevo"} {modelo.capitalize()}'
     })
+
 
 
 # Función para Eliminar
@@ -123,8 +134,16 @@ def eliminar_registro(request, modelo, pk):
 
     model_class, redirect_url = config[modelo]
     objeto = get_object_or_404(model_class, pk=pk)
-
+    if modelo == 'factura' and pk:
+            return redirect('acceso_denegado')
+    
+    if modelo == 'orden':
+     if Factura.objects.filter(orden=objeto).exists() or objeto.estado_orden == 'Facturada':
+         return redirect('acceso_denegado')
+    
     if request.method == 'POST':
+        if modelo == 'factura' and pk:
+            return redirect('acceso_denegado')
         objeto.delete()
         return redirect(redirect_url)
 
@@ -134,3 +153,30 @@ def eliminar_registro(request, modelo, pk):
 @login_required
 def acceso_denegado(request):
     return render(request, 'gestion/acceso_denegado.html', {}, status=403)
+
+import json
+from django.http import JsonResponse
+
+@login_required
+@requiere_rol('facturas')
+def api_totales_orden(request, pk):
+    orden = get_object_or_404(Orden, pk=pk)
+    from decimal import Decimal
+    IVA = Decimal('0.19')
+
+    # Recalcular desde DetalleOrden en lugar de usar orden.total
+    subtotal = sum(
+        (d.subtotal or Decimal('0')) for d in orden.detalles.all()
+    )
+    # Si no hay detalles, usar orden.total como fallback
+    if subtotal == 0:
+        subtotal = orden.total
+
+    impuesto = (subtotal * IVA).quantize(Decimal('0.01'))
+    total    = subtotal + impuesto
+
+    return JsonResponse({
+        'subtotal': float(subtotal),
+        'impuesto': float(impuesto),
+        'total':    float(total)
+    })
