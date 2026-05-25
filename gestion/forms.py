@@ -4,6 +4,19 @@ from django.contrib.auth.models import User
 
 from .models import Plato, Cliente, Empleado, Mesa, Orden, Factura, Perfil
 
+CODIGOS_PAIS = [
+    ('', '— País —'),
+    ('+57', '🇨🇴 +57 Colombia'),
+    ('+1',  '🇺🇸 +1 EE.UU / Canadá'),
+    ('+34', '🇪🇸 +34 España'),
+    ('+52', '🇲🇽 +52 México'),
+    ('+54', '🇦🇷 +54 Argentina'),
+    ('+55', '🇧🇷 +55 Brasil'),
+    ('+56', '🇨🇱 +56 Chile'),
+    ('+58', '🇻🇪 +58 Venezuela'),
+    ('+593','🇪🇨 +593 Ecuador'),
+    ('+51', '🇵🇪 +51 Perú'),
+]
 
 class IngresoUsuarioForm(AuthenticationForm):
     error_messages = {
