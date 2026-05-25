@@ -16,9 +16,14 @@
         <td>{{ orden.cliente }}</td>
         <td>{{ orden.mesa }}</td>
         <td>{{ orden.estado_orden }}</td>
+        <!-- REEMPLAZAR el bloque <td> de acciones por: -->
         <td>
-            <a href="{% url 'editar_orden' orden.id %}" class="btn-editar">Editar</a>
-            <a href="{% url 'eliminar_orden' orden.id %}" class="btn-eliminar">Eliminar</a>
+    {% if orden.estado_orden != 'Facturada' and not orden.factura %}
+        <a href="{% url 'editar_orden' orden.id %}" class="btn-editar">Editar</a>
+        <a href="{% url 'eliminar_orden' orden.id %}" class="btn-eliminar">Eliminar</a>
+    {% else %}
+        <span style="color:#5c5c5c; font-size:0.85rem;">Facturada</span>
+    {% endif %}
         </td>
     </tr>
     {% endfor %}

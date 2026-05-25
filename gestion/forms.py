@@ -1,7 +1,7 @@
 from django import forms
 from django.contrib.auth.forms import AuthenticationForm, UserCreationForm
 from django.contrib.auth.models import User
-
+from decimal import Decimal
 from .models import Plato, Cliente, Empleado, Mesa, Orden, Factura, Perfil
 
 CODIGOS_PAIS = [
@@ -188,7 +188,31 @@ class OrdenForm(forms.ModelForm):
         model = Orden
         fields = ['cliente', 'empleado', 'mesa', 'estado_orden']
 
+IVA = 0.19  # 19 % — ajusta según tu negocio
 class FacturaForm(forms.ModelForm):
     class Meta:
         model = Factura
-        fields = ['orden', 'metodo_pago', 'subtotal', 'impuesto', 'total_factura']
+        fields = ['orden', 'metodo_pago']
+def clean(self):
+        cleaned = super().clean()
+        orden = cleaned.get('orden')
+        if orden:
+            subtotal = orden.total                          # ya calculado en DetalleOrden.save()
+            impuesto = (subtotal * Decimal(str(IVA))).quantize(Decimal('0.01'))
+            total    = subtotal + impuesto
+            cleaned['subtotal']      = subtotal
+            cleaned['impuesto']      = impuesto
+            cleaned['total_factura'] = total
+        return cleaned
+def save(self, commit=True):
+        instance = super().save(commit=False)
+        instance.subtotal      = self.cleaned_data['subtotal']
+        instance.impuesto      = self.cleaned_data['impuesto']
+        instance.total_factura = self.cleaned_data['total_factura']
+        if commit:
+            instance.save()
+            # Marcar la orden como Facturada
+            orden = instance.orden
+            orden.estado_orden = 'Facturada'
+            orden.save(update_fields=['estado_orden'])
+        return instance

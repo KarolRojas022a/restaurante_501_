@@ -9,4 +9,30 @@
         <a href="{% url 'inicio' %}" class="btn btn-secondary">Cancelar</a>
     </form>
 </div>
+{% if titulo == 'Nuevo Factura' or titulo == 'Nuevo factura' %}
+<div id="preview-factura" style="margin-top:16px; display:none;">
+    <strong>Subtotal:</strong> <span id="pv-subtotal">—</span> &nbsp;
+    <strong>IVA (19%):</strong> <span id="pv-impuesto">—</span> &nbsp;
+    <strong>Total:</strong> <span id="pv-total">—</span>
+</div>
+<script>
+(function () {
+    const sel = document.querySelector('select[name="orden"]');
+    const box = document.getElementById('preview-factura');
+    if (!sel) return;
+    sel.addEventListener('change', function () {
+        const pk = this.value;
+        if (!pk) { box.style.display = 'none'; return; }
+        fetch('/api/orden/' + pk + '/totales/')
+            .then(r => r.json())
+            .then(d => {
+                document.getElementById('pv-subtotal').textContent  = '$' + d.subtotal.toFixed(2);
+                document.getElementById('pv-impuesto').textContent  = '$' + d.impuesto.toFixed(2);
+                document.getElementById('pv-total').textContent     = '$' + d.total.toFixed(2);
+                box.style.display = 'block';
+            });
+    });
+})();
+</script>
+{% endif %}
 {% endblock %}

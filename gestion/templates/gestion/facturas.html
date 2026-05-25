@@ -16,10 +16,7 @@
         <td>{{ factura.orden }}</td>
         <td>{{ factura.total_factura }}</td>
         <td>{{ factura.metodo_pago }}</td>
-        <td>
-            <a href="{% url 'editar_factura' factura.id %}" class="btn-editar">Editar</a>
-            <a href="{% url 'eliminar_factura' factura.id %}" class="btn-eliminar">Eliminar</a>
-        </td>
+       
     </tr>
     {% endfor %}
 </table>
