@@ -3,6 +3,8 @@ from django.contrib.auth.forms import AuthenticationForm, UserCreationForm
 from django.contrib.auth.models import User
 from decimal import Decimal
 from .models import Plato, Cliente, Empleado, Mesa, Orden, Factura, Perfil
+from django.forms import inlineformset_factory
+from .models import DetalleOrden
 
 CODIGOS_PAIS = [
     ('', '— País —'),
@@ -188,31 +190,50 @@ class OrdenForm(forms.ModelForm):
         model = Orden
         fields = ['cliente', 'empleado', 'mesa', 'estado_orden']
 
-IVA = 0.19  # 19 % — ajusta según tu negocio
+IVA = Decimal('0.19')
+
 class FacturaForm(forms.ModelForm):
     class Meta:
         model = Factura
         fields = ['orden', 'metodo_pago']
-def clean(self):
+
+    def clean(self):
         cleaned = super().clean()
         orden = cleaned.get('orden')
         if orden:
-            subtotal = orden.total                          # ya calculado en DetalleOrden.save()
-            impuesto = (subtotal * Decimal(str(IVA))).quantize(Decimal('0.01'))
+            subtotal = sum(
+                (d.subtotal or Decimal('0')) for d in orden.detalles.all()
+            )
+            if subtotal == Decimal('0'):
+                subtotal = orden.total
+            impuesto = (subtotal * IVA).quantize(Decimal('0.01'))
             total    = subtotal + impuesto
             cleaned['subtotal']      = subtotal
             cleaned['impuesto']      = impuesto
             cleaned['total_factura'] = total
         return cleaned
-def save(self, commit=True):
+
+    def save(self, commit=True):
         instance = super().save(commit=False)
         instance.subtotal      = self.cleaned_data['subtotal']
         instance.impuesto      = self.cleaned_data['impuesto']
         instance.total_factura = self.cleaned_data['total_factura']
         if commit:
             instance.save()
-            # Marcar la orden como Facturada
             orden = instance.orden
             orden.estado_orden = 'Facturada'
             orden.save(update_fields=['estado_orden'])
         return instance
+class DetalleOrdenForm(forms.ModelForm):
+    class Meta:
+        model = DetalleOrden
+        fields = ['plato', 'cantidad']   # precio_unitario y subtotal se calculan en DetalleOrden.save()
+
+DetalleOrdenFormSet = inlineformset_factory(
+    Orden,
+    DetalleOrden,
+    form=DetalleOrdenForm,
+    extra=3,          # 3 filas vacías por defecto
+    can_delete=True,
+    min_num=0,
+)  

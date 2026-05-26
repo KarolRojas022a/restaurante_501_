@@ -84,6 +84,33 @@ def gestionar_registro(request, modelo, pk=None):
     perfil = getattr(request.user, 'perfil', None)
     if not tiene_acceso(perfil, MODULO_POR_MODELO.get(modelo)):
         return redirect('acceso_denegado')
+    if modelo == 'orden':
+        from .forms import DetalleOrdenFormSet
+        instance = get_object_or_404(Orden, pk=pk) if pk else None
+
+        if pk and instance:
+            if Factura.objects.filter(orden_id=pk).exists():
+                return redirect('acceso_denegado')
+            if instance.estado_orden == 'Facturada':
+                return redirect('acceso_denegado')
+
+        if request.method == 'POST':
+            form = OrdenForm(request.POST, instance=instance)
+            formset = DetalleOrdenFormSet(request.POST, instance=instance)
+            if form.is_valid() and formset.is_valid():
+                orden_guardada = form.save()
+                formset.instance = orden_guardada
+                formset.save()
+                return redirect('lista_ordenes')
+        else:
+            form = OrdenForm(instance=instance)
+            formset = DetalleOrdenFormSet(instance=instance)
+
+        return render(request, 'gestion/form_orden.html', {
+            'form': form,
+            'formset': formset,
+            'titulo': f'{"Editar" if pk else "Nueva"} Orden',
+        })
 
     model_class, form_class, redirect_url = config[modelo]
     instance = get_object_or_404(model_class, pk=pk) if pk else None
@@ -160,17 +187,15 @@ from django.http import JsonResponse
 @login_required
 @requiere_rol('facturas')
 def api_totales_orden(request, pk):
-    orden = get_object_or_404(Orden, pk=pk)
     from decimal import Decimal
+    orden = get_object_or_404(Orden, pk=pk)
     IVA = Decimal('0.19')
 
-    # Recalcular desde DetalleOrden en lugar de usar orden.total
     subtotal = sum(
         (d.subtotal or Decimal('0')) for d in orden.detalles.all()
     )
-    # Si no hay detalles, usar orden.total como fallback
-    if subtotal == 0:
-        subtotal = orden.total
+    if not subtotal:
+        subtotal = orden.total if orden.total else Decimal('0')
 
     impuesto = (subtotal * IVA).quantize(Decimal('0.01'))
     total    = subtotal + impuesto
@@ -180,3 +205,5 @@ def api_totales_orden(request, pk):
         'impuesto': float(impuesto),
         'total':    float(total)
     })
+
+

@@ -1,0 +1,30 @@
+
+{% extends 'gestion/base.html' %}
+{% block content %}
+<h2>{{ titulo }}</h2>
+<form method="post">
+    {% csrf_token %}
+    {{ form.as_p }}
+
+    <h3>Platos de la orden</h3>
+    {{ formset.management_form }}
+    <table>
+        <tr>
+            <th>Plato</th>
+            <th>Cantidad</th>
+            <th>Eliminar</th>
+        </tr>
+        {% for detalle_form in formset %}
+        <tr>
+            <td>{{ detalle_form.plato }}</td>
+            <td>{{ detalle_form.cantidad }}</td>
+            <td>{{ detalle_form.DELETE }}</td>
+            {{ detalle_form.id }}
+        </tr>
+        {% endfor %}
+    </table>
+
+    <button type="submit" class="btn btn-success">Guardar Registro</button>
+    <a href="{% url 'lista_ordenes' %}" class="btn btn-secondary">Cancelar</a>
+</form>
+{% endblock %}
